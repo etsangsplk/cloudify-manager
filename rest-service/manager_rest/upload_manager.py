@@ -475,9 +475,8 @@ class UploadedBlueprintsManager(UploadedDataManager):
                                                   data_id), None
 
     @classmethod
-    def _process_plugins(cls, file_server_root, blueprint_id):
-        plugins_directory = path.join(file_server_root,
-                                      "blueprints", blueprint_id, "plugins")
+    def _process_plugins(cls, blueprint_dir, blueprint_id):
+        plugins_directory = path.join(blueprint_dir, "plugins")
         if not path.isdir(plugins_directory):
             return
         plugins = [path.join(plugins_directory, directory)
@@ -486,9 +485,7 @@ class UploadedBlueprintsManager(UploadedDataManager):
 
         for plugin_dir in plugins:
             final_zip_name = '{0}.zip'.format(path.basename(plugin_dir))
-            target_zip_path = path.join(file_server_root,
-                                        "blueprints", blueprint_id,
-                                        'plugins', final_zip_name)
+            target_zip_path = path.join(plugins_directory, final_zip_name)
             cls._zip_dir(plugin_dir, target_zip_path)
 
     @classmethod
@@ -538,10 +535,11 @@ class UploadedBlueprintsManager(UploadedDataManager):
                 file_server_root,
                 config.instance.file_server_blueprints_folder,
                 current_app.config[CURRENT_TENANT_CONFIG].name)
+            blueprint_dir = os.path.join(tenant_dir, blueprint.id)
             mkdirs(tenant_dir)
             shutil.move(os.path.join(file_server_root, app_dir),
-                        os.path.join(tenant_dir, blueprint.id))
-            cls._process_plugins(file_server_root, blueprint.id)
+                        blueprint_dir)
+            cls._process_plugins(blueprint_dir, blueprint.id)
             return blueprint
         except manager_exceptions.DslParseException, ex:
             shutil.rmtree(os.path.join(file_server_root, app_dir))

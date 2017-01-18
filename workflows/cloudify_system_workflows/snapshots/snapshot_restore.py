@@ -21,7 +21,7 @@ import platform
 import tempfile
 from contextlib import contextmanager
 
-from wagon import wagon
+import wagon
 
 from cloudify.workflows import ctx
 from cloudify.utils import ManagerVersion
@@ -191,7 +191,7 @@ class SnapshotRestore(object):
         """
         def should_install(plugin):
             return plugin.archive_name not in existing_plugins \
-                   and self._plugin_installable_on_current_platform(plugin)
+                and self._plugin_installable_on_current_platform(plugin)
 
         ctx.logger.debug('Looking for plugins to install')
         all_plugins = self._client.plugins.list()
@@ -220,7 +220,7 @@ class SnapshotRestore(object):
             full_distribution_name=False)
         dist, release = dist.lower(), release.lower()
         return (plugin['supported_platform'] == 'any' or all([
-            plugin['supported_platform'] == wagon.utils.get_platform(),
+            plugin['supported_platform'] == wagon.get_platform(),
             plugin['distribution'] == dist,
             plugin['distribution_release'] == release
         ]))

@@ -23,11 +23,11 @@ import uuid
 import os
 import shutil
 
-from flask.testing import FlaskClient
+import wagon
+from mock import MagicMock
 from nose.tools import nottest
 from nose.plugins.attrib import attr
-from wagon.wagon import Wagon
-from mock import MagicMock
+from flask.testing import FlaskClient
 
 from manager_rest import utils, config, constants, archiving
 from manager_rest.test.security_utils import get_admin_user
@@ -72,7 +72,7 @@ def test_config(**kwargs):
 @nottest
 def inject_test_config(f):
     """
-    decorator for injecting "test_config" into a test obj method.
+    Decorator for injecting "test_config" into a test obj method.
     also see the "test_config" decorator
     :param f: a test obj method to be injected with the "test_config" parameter
     :return: the method augmented with the "test_config" parameter
@@ -89,6 +89,7 @@ class TestClient(FlaskClient):
     """A helper class that overrides flask's default testing.FlaskClient
     class for the purpose of adding authorization headers to all rest calls
     """
+
     def open(self, *args, **kwargs):
         kwargs = kwargs or {}
         admin = get_admin_user()
@@ -183,7 +184,6 @@ class BaseServerTestCase(unittest.TestCase):
         right after the import the log path is set normally like the rest
         of the variables (used in the reset_state)
         """
-
         with open(self.tmp_conf_file, 'w') as f:
             json.dump({'rest_service_log_path': self.rest_service_log,
                        'rest_service_log_file_size_MB': 1,
@@ -452,9 +452,11 @@ class BaseServerTestCase(unittest.TestCase):
 
     def create_wheel(self, package_name, package_version):
         module_src = '{0}=={1}'.format(package_name, package_version)
-        wagon_client = Wagon(module_src)
-        return wagon_client.create(
-            archive_destination_dir=tempfile.gettempdir(), force=True)
+        return wagon.create(
+            source=module_src,
+            archive_destination_dir=tempfile.gettempdir(),
+            force=True,
+            archive_format='tar.gz')
 
     def wait_for_url(self, url, timeout=5):
         end = time.time() + timeout

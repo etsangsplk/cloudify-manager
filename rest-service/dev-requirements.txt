@@ -7,3 +7,4 @@ https://github.com/cloudify-cosmo/cloudify-aria-extensions/archive/master.zip
 mock
 python-dateutil
 wagon
+faker
